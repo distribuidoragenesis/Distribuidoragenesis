@@ -1672,25 +1672,39 @@ function openQuote(){
   if(!cart.length){toast("El carrito está vacío","error");return;}
   document.getElementById("quoteStoreName").textContent=storeSettings.name||"DISTRIBUIDORA GENESIS";
   document.getElementById("quoteDate").textContent=new Date().toLocaleDateString("es-GT",{year:"numeric",month:"long",day:"numeric"});
-  const tipoLabel=PRECIO_TIPOS[mayoreoTipo||"publico"]?.label||"Público";
+
+  // Determinar tipo y etiqueta de columna
+  const esMayorista=mayoreoMode&&mayoreoTipo&&mayoreoTipo!=="publico";
+  const allTipos={...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS};
+  const tipoLabel=esMayorista?(allTipos[mayoreoTipo]?.label||"Mayoristas"):"Público";
+  const colorTotal=esMayorista?"var(--green)":"var(--accent)";
+
   const subtotal=cart.reduce((s,ci)=>{const p=products.find(x=>x.id===ci.id);return s+(p?getPrecioProducto(p)*ci.qty:0);},0);
-  const totalPub=cart.reduce((s,ci)=>{const p=products.find(x=>x.id===ci.id);return s+(p?p.price*ci.qty:0);},0);
-  let rows=cart.map(ci=>{const p=products.find(x=>x.id===ci.id);if(!p)return"";const pu=getPrecioProducto(p);return"<tr><td>"+(p.sku||"—")+"</td><td>"+p.name+"</td><td>"+ci.qty+"</td><td>Q"+pu.toFixed(2)+"</td><td>Q"+(pu*ci.qty).toFixed(2)+"</td></tr>";}).join("");
-  let html="<table class='quote-table'><thead><tr><th>SKU</th><th>Producto</th><th>Cant.</th><th>P.Unit ("+tipoLabel+")</th><th>Subtotal</th></tr></thead><tbody>"+rows+"</tbody></table>";
-  html+="<table class='quote-table' style='margin-top:1rem'><tbody><tr class='quote-total-row'><td colspan='4' style='text-align:right'>TOTAL ("+tipoLabel+"):</td><td style='color:"+(mayoreoMode?"var(--orange)":"var(--accent)")+"'>Q"+subtotal.toFixed(2)+"</td></tr></tbody></table>";
+
+  let rows=cart.map(ci=>{
+    const p=products.find(x=>x.id===ci.id);if(!p)return"";
+    const pu=getPrecioProducto(p);
+    return"<tr><td>"+(p.sku||"—")+"</td><td>"+p.name+"</td><td>"+ci.qty+"</td><td>Q"+pu.toFixed(2)+"</td><td>Q"+(pu*ci.qty).toFixed(2)+"</td></tr>";
+  }).join("");
+
+  let html="<table class='quote-table'><thead><tr><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unit ("+tipoLabel+")</th><th>Subtotal</th></tr></thead><tbody>"+rows+"</tbody></table>";
+  html+="<table class='quote-table' style='margin-top:1rem'><tbody><tr class='quote-total-row'><td colspan='4' style='text-align:right'>TOTAL ("+tipoLabel+"):</td><td style='color:"+colorTotal+";font-weight:800'>Q"+subtotal.toFixed(2)+"</td></tr></tbody></table>";
+
   document.getElementById("quoteBody").innerHTML=html;
   document.getElementById("quoteModal").classList.add("open");
 }
 function printQuote(){window.print();}
 function shareQuoteWhatsApp(){
   const wa=storeSettings.waNumber, name=storeSettings.name||"DISTRIBUIDORA GENESIS";
-  const tipoLabel=PRECIO_TIPOS[mayoreoTipo||"publico"]?.label||"Público";
+  const esMayorista=mayoreoMode&&mayoreoTipo&&mayoreoTipo!=="publico";
+  const allTipos={...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS};
+  const tipoLabel=esMayorista?(allTipos[mayoreoTipo]?.label||"Mayoristas"):"Público";
   let msg="Cotización - "+name+"\n"+new Date().toLocaleDateString("es-GT")+"\nPrecios: "+tipoLabel+"\n";
   const client=document.getElementById("quoteClient").value; if(client) msg+="Cliente: "+client+"\n";
   msg+="\n";
-  cart.forEach(ci=>{const p=products.find(x=>x.id===ci.id);if(!p)return;const pu=getPrecioProducto(p);msg+="- "+p.name+" x"+ci.qty+" = Q"+(pu*ci.qty).toFixed(2)+"\n";});
+  cart.forEach(ci=>{const p=products.find(x=>x.id===ci.id);if(!p)return;const pu=getPrecioProducto(p);msg+="• "+p.name+" x"+ci.qty+" = Q"+(pu*ci.qty).toFixed(2)+"\n";});
   const total=cart.reduce((s,ci)=>{const p=products.find(x=>x.id===ci.id);return s+(p?getPrecioProducto(p)*ci.qty:0);},0);
-  msg+="\nTOTAL: Q"+total.toFixed(2);
+  msg+="\nTOTAL ("+tipoLabel+"): Q"+total.toFixed(2);
   window.open("https://wa.me/"+(wa||"")+"?text="+encodeURIComponent(msg),"_blank");
 }
 
