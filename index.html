@@ -1688,7 +1688,7 @@ function openQuote(){
   }).join("");
 
   let html="<table class='quote-table'><thead><tr><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unit ("+tipoLabel+")</th><th>Subtotal</th></tr></thead><tbody>"+rows+"</tbody></table>";
-  html+="<table class='quote-table' style='margin-top:1rem'><tbody><tr class='quote-total-row'><td colspan='4' style='text-align:right'>TOTAL ("+tipoLabel+"):</td><td style='color:"+colorTotal+";font-weight:800'>Q"+subtotal.toFixed(2)+"</td></tr></tbody></table>";
+  html+="<table class='quote-table' style='margin-top:1rem'><tbody><tr class='quote-total-row'><td colspan='4' style='text-align:right'>TOTAL:</td><td style='color:"+colorTotal+";font-weight:800'>Q"+subtotal.toFixed(2)+"</td></tr></tbody></table>";
 
   document.getElementById("quoteBody").innerHTML=html;
   document.getElementById("quoteModal").classList.add("open");
